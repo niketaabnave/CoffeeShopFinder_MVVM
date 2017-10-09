@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">FindCoffeeShop</string>
+    <string name="coffeshops">Coffee Shops</string>
+    <string name="title_activity_maps">Map</string>
+    <string name="open_yes">Open Now : Yes</string>
+    <string name="open_no">Open Now : No</string>
+    <string name="current_location">Current Location</string>
+    <string name="info">Information</string>
+    <string name="force_allow_location">Acces to Location is required. Please allow location access.</string>
+    <string name="enable_gps">Your GPS seems to be disabled, do you want to enable it?</string>
+</resources>

@@ -1,0 +1,47 @@
+// Top-level build file where you can add configuration options common to all sub-projects/modules.
+
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:2.3.3'
+
+        // NOTE: Do not place your application dependencies here; they belong
+        // in the individual module build.gradle files
+    }
+}
+
+allprojects {
+    repositories {
+        jcenter()
+        maven { url 'https://maven.google.com' }
+    }
+}
+
+task clean(type: Delete) {
+    delete rootProject.buildDir
+}
+// Define versions in a single place
+ext {
+    // Sdk and tools
+    minSdkVersion = 16
+    targetSdkVersion = 26
+    compileSdkVersion = 26
+    buildToolsVersion = '26.0.0'
+
+    // App dependencies
+    supportLibraryVersion = '26.1.0'
+    gsonVersion = '2.8.0'
+    googlemap = '11.0.4'
+    retrofit = '2.1.0'
+    okHttp = '3.3.0'
+    okio = '1.6.0'
+    multidex = '1.0.0'
+    dagger2Version = '2.11'
+
+    //Test dependencies
+    junitVersion = '4.12'
+    constraintLayout = '1.0.2'
+
+}
