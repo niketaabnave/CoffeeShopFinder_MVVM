@@ -22,14 +22,8 @@ API Level Support : Android Version 4.4.4 and above
 Design Architecture - MVVM
 
 Dependancy Injection - Dagger2
-			Dagger 2 uses the following annotations:
-	          •	@Module and @Provides: define classes and methods which provide dependencies
-	          •	@Inject: request dependencies. Can be used on a constructor, a field, or a method
-	          •	@Component: enable selected modules and used for performing dependency injection
-            
-How To Install :
-	•	Go to phone settings 
-	•	Security section : Enable “ unknown sources ” option
-	•	Install the apk
-
-              
+Dagger 2 uses the following annotations:
+@Module and @Provides: define classes and methods which provide dependencies
+@Inject: request dependencies. Can be used on a constructor, a field, or a method
+@Component: enable selected modules and used for performing dependency injection
+           
