@@ -22,7 +22,7 @@ public class CoffeeShopResponse {
     private List<Result> results = new ArrayList<Result>();
     @SerializedName("status")
     @Expose
-    private String status;
+    public String status;
 
     /**
      *

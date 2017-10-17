@@ -25,6 +25,7 @@ import com.sumasoft.findcoffeeshop.di.component.DaggerActivityComponent;
 import com.sumasoft.findcoffeeshop.di.module.ActivityModule;
 import com.sumasoft.findcoffeeshop.model.CoffeeShopResponse;
 import com.sumasoft.findcoffeeshop.model.Result;
+import com.sumasoft.findcoffeeshop.utils.NetworkError;
 
 import javax.inject.Inject;
 
@@ -176,9 +177,10 @@ public class MapsActivity extends FragmentActivity implements MapNavigator {
     }
 
     @Override
-    public void onPlacesApiFailure(Call<CoffeeShopResponse> responseCall) {
+    public void onPlacesApiFailure(Throwable throwableError) {
         //show message when places api fails
-        Toast.makeText(MapsActivity.this,getResources().getString(R.string.something_went_wrong),Toast.LENGTH_LONG).show();
+        NetworkError networkError = new NetworkError(throwableError);
+        Toast.makeText(this, networkError.getAppErrorMessage(), Toast.LENGTH_LONG).show();
     }
 
     @Override

@@ -56,6 +56,7 @@ dependencies {
     compile "com.squareup.okio:okio:$rootProject.okio"
     compile "com.squareup.okhttp3:okhttp:$rootProject.okHttp"
     compile "com.squareup.okhttp3:logging-interceptor:$rootProject.okHttp"
+    compile "com.squareup.retrofit2:adapter-rxjava:$rootProject.retrofit"
 }
 
 

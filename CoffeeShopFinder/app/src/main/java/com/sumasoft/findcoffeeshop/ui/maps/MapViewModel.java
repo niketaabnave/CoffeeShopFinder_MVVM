@@ -188,7 +188,7 @@ public class MapViewModel extends BaseViewModel<MapNavigator> {
                     }
                     @Override
                     public void onFailure(Call<CoffeeShopResponse> responseCall, Throwable t) {
-                        getNavigator().onPlacesApiFailure(responseCall);
+                        getNavigator().onPlacesApiFailure(t);
                     }
                 });
     }

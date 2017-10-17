@@ -64,7 +64,7 @@ public interface MapNavigator extends OnMapReadyCallback,GoogleApiClient.Connect
 
     void closeActivity();
 
-    void onPlacesApiFailure(Call<CoffeeShopResponse> responseCall);
+    void onPlacesApiFailure(Throwable t);
 
     void showInternetError(AlertDialog alertDialog);
 }
