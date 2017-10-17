@@ -17,7 +17,6 @@ import retrofit2.Retrofit;
 @Singleton
 @Component(modules = {ApplicationModule.class, ApiModule.class})
 public interface ApplicationComponent {
-    Retrofit retrofit();
     PlacesApi providePlacesApi();
 
     void inject(MapsActivity target);

@@ -14,7 +14,10 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
+import com.sumasoft.findcoffeeshop.model.CoffeeShopResponse;
 import com.sumasoft.findcoffeeshop.model.Result;
+
+import retrofit2.Call;
 
 /**
  * Created by sumasoft on 05/10/17.
@@ -60,4 +63,8 @@ public interface MapNavigator extends OnMapReadyCallback,GoogleApiClient.Connect
     void openSettingForLocationEnable();
 
     void closeActivity();
+
+    void onPlacesApiFailure(Call<CoffeeShopResponse> responseCall);
+
+    void showInternetError(AlertDialog alertDialog);
 }

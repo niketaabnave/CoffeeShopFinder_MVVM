@@ -12,6 +12,7 @@ import android.support.v7.app.AlertDialog;
 import android.view.View;
 import android.widget.RatingBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.maps.GoogleMap;
@@ -22,9 +23,12 @@ import com.sumasoft.findcoffeeshop.R;
 import com.sumasoft.findcoffeeshop.di.component.ActivityComponent;
 import com.sumasoft.findcoffeeshop.di.component.DaggerActivityComponent;
 import com.sumasoft.findcoffeeshop.di.module.ActivityModule;
+import com.sumasoft.findcoffeeshop.model.CoffeeShopResponse;
 import com.sumasoft.findcoffeeshop.model.Result;
 
 import javax.inject.Inject;
+
+import retrofit2.Call;
 
 
 public class MapsActivity extends FragmentActivity implements MapNavigator {
@@ -55,6 +59,8 @@ public class MapsActivity extends FragmentActivity implements MapNavigator {
         //MapNavigator will be set as navigator between activity and viewModel
         mViewModel.setNavigator(this);
 
+        mViewModel.isInternetIsAvailable(MapsActivity.this);
+
         //show error dialog if Google Play Services not available
         mViewModel.isGooglePlayServicesAvailable(MapsActivity.this, MapsActivity.this);
 
@@ -69,7 +75,7 @@ public class MapsActivity extends FragmentActivity implements MapNavigator {
         super.onResume();
 
         //checked for gps is enabled or not
-        mViewModel.isGpsEnabled(MapsActivity.this, MapsActivity.this);
+        mViewModel.isGpsEnabled(MapsActivity.this);
     }
 
 
@@ -167,6 +173,17 @@ public class MapsActivity extends FragmentActivity implements MapNavigator {
     public void closeActivity() {
         //finish this activity
         finish();
+    }
+
+    @Override
+    public void onPlacesApiFailure(Call<CoffeeShopResponse> responseCall) {
+        //show message when places api fails
+        Toast.makeText(MapsActivity.this,getResources().getString(R.string.something_went_wrong),Toast.LENGTH_LONG).show();
+    }
+
+    @Override
+    public void showInternetError(AlertDialog alertDialog) {
+        alertDialog.show();
     }
 
 

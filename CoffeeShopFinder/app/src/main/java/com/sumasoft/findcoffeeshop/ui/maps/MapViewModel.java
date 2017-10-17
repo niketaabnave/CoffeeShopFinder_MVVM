@@ -5,7 +5,6 @@ import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -16,29 +15,24 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
-import android.util.Log;
-
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
-import com.google.android.gms.maps.model.MarkerOptions;
 import com.sumasoft.findcoffeeshop.R;
 import com.sumasoft.findcoffeeshop.data.remote.PlacesApi;
 import com.sumasoft.findcoffeeshop.model.CoffeeShopResponse;
+import com.sumasoft.findcoffeeshop.model.Result;
 import com.sumasoft.findcoffeeshop.ui.base.BaseViewModel;
 import com.google.android.gms.location.LocationServices;
 import com.sumasoft.findcoffeeshop.utils.Constants;
 import com.sumasoft.findcoffeeshop.utils.DialogUtils;
-
 import javax.inject.Inject;
-
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -55,18 +49,17 @@ public class MapViewModel extends BaseViewModel<MapNavigator> {
     private Marker mCurrLocationMarker;
     GoogleMap mGoogleMap;
     private Response<CoffeeShopResponse> mResponse;
-
     //inject DialogUtils to access its property
     @Inject
     DialogUtils mDialogUtils;
-
     //inject PlacesApi to access its property
     @Inject
     PlacesApi placesApi;
-
-
+    //inject MarkerViewModel to access its property
+    @Inject
+    MarkerViewModel markerViewModel;
     //check for gps is enabled or not. If not enabled then redirect to settings of device to enable location manually
-    public void isGpsEnabled(Context mContext, final Activity activity) {
+    public void isGpsEnabled(Context mContext) {
         try {
             final LocationManager manager = (LocationManager) mContext.getSystemService(Context.LOCATION_SERVICE);
 
@@ -93,7 +86,6 @@ public class MapViewModel extends BaseViewModel<MapNavigator> {
         }
     };
 
-
     //check for google play service is available on device
     public boolean isGooglePlayServicesAvailable(Context mContext, Activity activity) {
         try {
@@ -111,8 +103,6 @@ public class MapViewModel extends BaseViewModel<MapNavigator> {
         }
         return true;
     }
-
-
 
     public void onMapReady(GoogleMap googleMap, Context mContext) {
         //used fused location API to get location(latitude and longitude) of user
@@ -137,8 +127,7 @@ public class MapViewModel extends BaseViewModel<MapNavigator> {
     }
 
     @Inject
-    public MapViewModel() {
-    }
+    public MapViewModel() {}
 
     protected synchronized void buildGoogleApiClient(Context mContext) {
         mGoogleApiClient = new GoogleApiClient.Builder(mContext)
@@ -149,10 +138,10 @@ public class MapViewModel extends BaseViewModel<MapNavigator> {
         mGoogleApiClient.connect();
     }
 
-
     public void onConnected(Bundle bundle,Context mContext) {
         //request location updated for given interval
         mLocationRequest = new LocationRequest();
+        mLocationRequest.setSmallestDisplacement(Constants.LOCATION_API_SMALLEST_DISPLACEMENT); //after every 500 meter distance travel location is updated
         mLocationRequest.setInterval(Constants.LOCATION_API_INTERVAL);
         mLocationRequest.setFastestInterval(Constants.LOCATION_API_INTERVAL);
         mLocationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
@@ -163,13 +152,9 @@ public class MapViewModel extends BaseViewModel<MapNavigator> {
         }
     }
 
-    public void onConnectionSuspended(int i) {
+    public void onConnectionSuspended(int i) {}
 
-    }
-
-    public void onConnectionFailed(ConnectionResult connectionResult) {
-
-    }
+    public void onConnectionFailed(ConnectionResult connectionResult) {}
 
     public void onLocationChanged(Location location,Context mContext) {
         mLastLocation = location;
@@ -183,16 +168,16 @@ public class MapViewModel extends BaseViewModel<MapNavigator> {
             mCurrLocationMarker.remove();
         }
         //add current location marker
-        mCurrLocationMarker = addMarker(latLng,mCurrentbitmapDescriptor,"Current Location");
+        mCurrLocationMarker = markerViewModel.addMarker(latLng,mCurrentbitmapDescriptor,"Current Location",mGoogleMap);
 
         //find coffee shops of near by location
-        getCoffeeShopsNearMe(latLng,mContext);
+        locateCoffeeShopsNearMe(latLng,mContext);
 
         //listener for marker clicked is set
         mGoogleMap.setOnMarkerClickListener(getNavigator());
     }
 
-    private void getCoffeeShopsNearMe(LatLng latLng, final Context mContext) {
+    private void locateCoffeeShopsNearMe(LatLng latLng, final Context mContext) {
         //call to google's places API for getting nearby coffee shops within provided radius
         placesApi.getPlaces(Constants.TYPES, latLng.latitude + "," + latLng.longitude, Constants.RADIUS)
                 .enqueue(new Callback<CoffeeShopResponse>() {
@@ -201,10 +186,9 @@ public class MapViewModel extends BaseViewModel<MapNavigator> {
                         //handle the response got from API
                         handleCoffeeShopResponse(response,mContext);
                     }
-
                     @Override
-                    public void onFailure(Call<CoffeeShopResponse> call, Throwable t) {
-
+                    public void onFailure(Call<CoffeeShopResponse> responseCall, Throwable t) {
+                        getNavigator().onPlacesApiFailure(responseCall);
                     }
                 });
     }
@@ -215,52 +199,12 @@ public class MapViewModel extends BaseViewModel<MapNavigator> {
         return latLng;
     }
 
-
     public boolean onMarkerClick(Marker marker,Context mContext) {
         //show required information on click of any marker
-        try {
-            String tag = "";
-            if (marker.getTag() != null) {
-                tag = marker.getTag().toString();
-            }
-            if (mResponse != null) {
-                for (int i = 0; i < mResponse.body().getResults().size(); i++) {
-                    if (mResponse.body().getResults().get(i).getId().equals(tag) || mResponse.body().getResults().get(i).getId().equals(i)) {
-                        Dialog dialog = mDialogUtils.getDialog(mContext,R.layout.popup_map_info_window,mContext.getResources().getString(R.string.info));
-                        getNavigator().showInfoWindow(mResponse.body().getResults().get(i),dialog);
-                        break;
-                    }
-                }
-            }
-        }catch (Exception e){
-            e.printStackTrace();
-        }
+        Result mResult = markerViewModel.getMarkerResponse(marker,mResponse);
+        Dialog dialog = mDialogUtils.getDialog(mContext, R.layout.popup_map_info_window,mContext.getResources().getString(R.string.info));
+        getNavigator().showInfoWindow(mResult,dialog);
         return true;
-    }
-
-    private Marker addMarker(LatLng latLng, BitmapDescriptor bitmapDescriptor,String title) {
-        Marker marker = null;
-        try {
-            MarkerOptions markerOptions = new MarkerOptions();
-            //position of marker on map
-            markerOptions.position(latLng);
-            //title to marker
-            markerOptions.title(title);
-
-            // Adding icon to the marker
-            markerOptions.icon(bitmapDescriptor);
-
-            // Adding Marker to the Map
-            marker = mGoogleMap.addMarker(markerOptions);
-
-            //move map camera
-            mGoogleMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
-            mGoogleMap.animateCamera(CameraUpdateFactory.zoomTo(11));
-            return marker;
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-        return marker;
     }
 
     //create bitmap descriptor from vector resource
@@ -276,24 +220,21 @@ public class MapViewModel extends BaseViewModel<MapNavigator> {
     public void handleCoffeeShopResponse(Response<CoffeeShopResponse> response, Context mContext) {
         try {
             mGoogleMap.clear();
-
             if(mCurrLocationMarker != null) {
                 //current latitude and longitude
                 LatLng mlatLng = getCurrentLatLong(mLastLocation);
                 //add current location marker
-                mCurrLocationMarker = addMarker(mlatLng, mCurrentbitmapDescriptor, mContext.getResources().getString(R.string.current_location));
+                mCurrLocationMarker = markerViewModel.addMarker(mlatLng, mCurrentbitmapDescriptor, mContext.getResources().getString(R.string.current_location),mGoogleMap);
             }
-
             mResponse = response;
             // This loop will go through all the results and add marker on each location.
             for (int i = 0; i < response.body().getResults().size(); i++) {
                 Double lat = response.body().getResults().get(i).getGeometry().getLocation().getLat();
                 Double lng = response.body().getResults().get(i).getGeometry().getLocation().getLng();
                 LatLng latLng = new LatLng(lat, lng);
-
                 //get bitmap descriptor from vector resource
                 BitmapDescriptor bitmapDescriptor  = bitmapDescriptorFromVector(mContext, R.drawable.ic_map_cafe_brown_24dp);
-                Marker marker = addMarker(latLng,bitmapDescriptor,response.body().getResults().get(i).getName());
+                Marker marker = markerViewModel.addMarker(latLng,bitmapDescriptor,response.body().getResults().get(i).getName(),mGoogleMap);
                 try {
                     if(marker != null) {
                         //set tag to marker to identify in onclick listener
@@ -306,11 +247,23 @@ public class MapViewModel extends BaseViewModel<MapNavigator> {
                 }catch (Exception e){
                     e.printStackTrace();
                 }
-
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
-
     }
+
+    public void isInternetIsAvailable(Context mContext) {
+        if(!mDialogUtils.isInternetPresent(mContext)){
+            AlertDialog alertDialog = mDialogUtils.showMessageOK(mContext.getResources().getString(R.string.internet_disconnected), okClickListener,mContext);
+            getNavigator().showInternetError(alertDialog);
+        }
+    }
+    //listener to listen on Ok button click
+    DialogInterface.OnClickListener okClickListener = new DialogInterface.OnClickListener() {
+        @Override
+        public void onClick(DialogInterface dialogInterface, int i) {
+            dialogInterface.dismiss();
+        }
+    };
 }

@@ -6,9 +6,11 @@ package com.sumasoft.findcoffeeshop.utils;
 
 public class Constants {
     public static final String PLACES_API_KEY = "AIzaSyDoAM2H83OLsL8JBNeMGz1YaKnoaDnwyy4";
-    public static final int RADIUS = 10000;
+    public static final int RADIUS = 1000;
     public static final String PLACES_SEARCH_URL = "https://maps.googleapis.com/maps/";
     public static final String RESPONSE_FORMAT = "json";
     public static final String TYPES = "cafe";
     public static final long LOCATION_API_INTERVAL = 30000;
+    public static final float LOCATION_API_SMALLEST_DISPLACEMENT = 500;
+    public static final float CAMEARA_ZOOM = 11;
 }
