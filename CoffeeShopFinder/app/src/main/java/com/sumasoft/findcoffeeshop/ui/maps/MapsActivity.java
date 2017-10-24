@@ -179,7 +179,7 @@ public class MapsActivity extends FragmentActivity implements MapNavigator {
     @Override
     public void onPlacesApiFailure(Throwable throwableError) {
         //show message when places api fails
-        NetworkError networkError = new NetworkError(throwableError);
+        NetworkError networkError = new NetworkError(throwableError,MapsActivity.this);
         Toast.makeText(this, networkError.getAppErrorMessage(), Toast.LENGTH_LONG).show();
     }
 
