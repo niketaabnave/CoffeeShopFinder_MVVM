@@ -8,7 +8,9 @@
     <string name="info">Information</string>
     <string name="force_allow_location">Acces to Location is required. Please allow location access.</string>
     <string name="enable_gps">Your GPS seems to be disabled, do you want to enable it?</string>
-    <string name="something_went_wrong">Something went wrong. Please try again later...</string>
+    <string name="something_went_wrong">Something went wrong! Please try again.</string>
+    <string name="no_internet">No Internet Connection!</string>
+    <string name="error_message">Error-Message</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
     <string name="ok">Ok</string>
