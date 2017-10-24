@@ -4,9 +4,11 @@ package com.sumasoft.findcoffeeshop.utils;
  * Created by sumasoft on 17/10/17.
  */
 
+import android.content.Context;
 import android.text.TextUtils;
 
 import com.google.gson.Gson;
+import com.sumasoft.findcoffeeshop.R;
 import com.sumasoft.findcoffeeshop.model.CoffeeShopResponse;
 
 import java.io.IOException;
@@ -18,14 +20,12 @@ import static java.net.HttpURLConnection.HTTP_UNAUTHORIZED;
 
 
 public class NetworkError extends Throwable {
-    public static final String DEFAULT_ERROR_MESSAGE = "Something went wrong! Please try again.";
-    public static final String NETWORK_ERROR_MESSAGE = "No Internet Connection!";
-    private static final String ERROR_MESSAGE_HEADER = "Error-Message";
     private final Throwable error;
-
-    public NetworkError(Throwable e) {
+    Context mContext;
+    public NetworkError(Throwable e, Context context) {
         super(e);
         this.error = e;
+        mContext = context;
     }
 
     public String getMessage() {
@@ -42,19 +42,19 @@ public class NetworkError extends Throwable {
     }
 
     public String getAppErrorMessage() {
-        if (this.error instanceof IOException) return NETWORK_ERROR_MESSAGE;
-        if (!(this.error instanceof HttpException)) return DEFAULT_ERROR_MESSAGE;
+        if (this.error instanceof IOException) return mContext.getResources().getString(R.string.no_internet);
+        if (!(this.error instanceof HttpException)) return mContext.getResources().getString(R.string.something_went_wrong);
         retrofit2.Response<?> response = ((HttpException) this.error).response();
         if (response != null) {
             String status = getJsonStringFromResponse(response);
             if (!TextUtils.isEmpty(status)) return status;
 
             Map<String, List<String>> headers = response.headers().toMultimap();
-            if (headers.containsKey(ERROR_MESSAGE_HEADER))
-                return headers.get(ERROR_MESSAGE_HEADER).get(0);
+            if (headers.containsKey(mContext.getResources().getString(R.string.error_message)))
+                return headers.get(mContext.getResources().getString(R.string.error_message)).get(0);
         }
 
-        return DEFAULT_ERROR_MESSAGE;
+        return mContext.getResources().getString(R.string.something_went_wrong);
     }
 
     protected String getJsonStringFromResponse(final retrofit2.Response<?> response) {
